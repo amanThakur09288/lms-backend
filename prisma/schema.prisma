@@ -1,0 +1,129 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  STUDENT
+}
+
+enum ItemType {
+  VIDEO
+  QUIZ
+  ASSIGNMENT
+  NOTE
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(STUDENT)
+  createdAt    DateTime @default(now())
+
+  enrollments  Enrollment[]
+}
+
+model Course {
+  id           String    @id @default(uuid())
+  title        String
+  subtitle     String?
+  description  String
+  thumbnailUrl String?
+  status       String    @default("draft")
+  createdAt    DateTime  @default(now())
+
+  sections     Section[]
+  enrollments  Enrollment[]
+}
+
+model Section {
+  id       String @id @default(uuid())
+  courseId String
+  title    String
+  order    Int
+
+  course Course @relation(fields: [courseId], references: [id])
+  items  Item[]
+}
+
+model Item {
+  id        String   @id @default(uuid())
+  sectionId String
+  type      ItemType
+  title     String
+  order     Int
+
+  section    Section     @relation(fields: [sectionId], references: [id])
+  video      Video?
+  quiz       Quiz?
+  assignment Assignment?
+}
+
+model Video {
+  id         String  @id @default(uuid())
+  itemId     String  @unique
+  videoUrl   String
+  duration   Int?
+  isPreview  Boolean @default(false)
+
+  item Item @relation(fields: [itemId], references: [id])
+}
+
+model Quiz {
+  id             String @id @default(uuid())
+  itemId         String @unique
+  passPercentage Int    @default(70)
+  timeLimitMin   Int?
+
+  item      Item           @relation(fields: [itemId], references: [id])
+  questions QuizQuestion[]
+}
+
+model QuizQuestion {
+  id     String @id @default(uuid())
+  quizId String
+  text   String
+  type   String
+  points Int    @default(10)
+  order  Int
+
+  quiz    Quiz         @relation(fields: [quizId], references: [id])
+  options QuizOption[]
+}
+
+model QuizOption {
+  id         String  @id @default(uuid())
+  questionId String
+  text       String
+  isCorrect  Boolean @default(false)
+
+  question QuizQuestion @relation(fields: [questionId], references: [id])
+}
+
+model Assignment {
+  id             String  @id @default(uuid())
+  itemId         String  @unique
+  instructions   String
+  submissionType String
+  graded         Boolean @default(true)
+
+  item Item @relation(fields: [itemId], references: [id])
+}
+
+model Enrollment {
+  id        String   @id @default(uuid())
+  userId    String
+  courseId  String
+  progress  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
+}
