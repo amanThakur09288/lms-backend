@@ -2,10 +2,17 @@
 const asyncHandler = require("../utils/asyncHandler");
 const authService = require("../services/auth.service");
 
+// const REFRESH_COOKIE_OPTIONS = {
+//   httpOnly: true,
+//   secure: process.env.NODE_ENV === "production",
+//   sameSite: "strict",
+//   maxAge: 7 * 24 * 60 * 60 * 1000,
+// };
+
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "strict",
+  secure: true, // required when sameSite is "none" — both your domains are HTTPS anyway, so this is fine
+  sameSite: "none", // required for cross-site cookies (Vercel frontend → Render backend)
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
