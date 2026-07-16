@@ -11,7 +11,7 @@ const errorHandler = require("./middleware/errorHandler");
 const authRoutes = require("./routes/auth.routes");
 
 const app = express();
-
+console.log("FRONTEND_URL =", process.env.FRONTEND_URL);
 app.use(helmet());
 app.use(
   cors({
