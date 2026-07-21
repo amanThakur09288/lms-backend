@@ -1,4 +1,3 @@
-// src/controllers/auth.controller.js
 const asyncHandler = require("../utils/asyncHandler");
 const authService = require("../services/auth.service");
 
@@ -9,10 +8,19 @@ const authService = require("../services/auth.service");
 //   maxAge: 7 * 24 * 60 * 60 * 1000,
 // };
 
+// const REFRESH_COOKIE_OPTIONS = {
+//   httpOnly: true,
+//   secure: true, // required when sameSite is "none" — both your domains are HTTPS anyway, so this is fine
+//   sameSite: "none", // required for cross-site cookies (Vercel frontend → Render backend)
+//   maxAge: 7 * 24 * 60 * 60 * 1000,
+// };
+
+const isProduction = process.env.NODE_ENV === "production";
+
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: true, // required when sameSite is "none" — both your domains are HTTPS anyway, so this is fine
-  sameSite: "none", // required for cross-site cookies (Vercel frontend → Render backend)
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 

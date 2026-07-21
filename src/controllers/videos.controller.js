@@ -1,35 +1,29 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const asyncHandler = require("../utils/asyncHandler");
+const AppError = require("../utils/AppError");
+const videoService = require("../services/video.service");
 
-async function uploadVideo(req, res) {
-  try {
-    const { sectionId } = req.params;
-    const { title, isPreview } = req.body;
+// POST /api/admin/sections/:sectionId/videos/upload  (multipart/form-data, file field = "video")
+const uploadVideo = asyncHandler(async (req, res) => {
+  if (!req.file) throw new AppError("No video file uploaded", 400);
 
-    if (!req.file) return res.status(400).json({ error: "No video file uploaded" });
-    if (!title) return res.status(400).json({ error: "Title is required" });
+  const item = await videoService.addUploadedVideo(req.params.sectionId, {
+    title: req.body.title,
+    isPreview: req.body.isPreview === "true",
+    videoUrl: req.file.location, // set by multer-s3
+  });
 
-    const videoUrl = req.file.location;
+  res.status(201).json({ success: true, data: item });
+});
 
-    const lastItem = await prisma.item.findFirst({ where: { sectionId }, orderBy: { order: "desc" } });
-    const nextOrder = lastItem ? lastItem.order + 1 : 0;
+// POST /api/admin/sections/:sectionId/videos/link  (application/json)
+const addVideoLink = asyncHandler(async (req, res) => {
+  const item = await videoService.addLinkedVideo(req.params.sectionId, req.body);
+  res.status(201).json({ success: true, data: item });
+});
 
-    const item = await prisma.item.create({
-      data: {
-        sectionId,
-        type: "VIDEO",
-        title,
-        order: nextOrder,
-        video: { create: { videoUrl, isPreview: isPreview === "true" } },
-      },
-      include: { video: true },
-    });
+const deleteVideo = asyncHandler(async (req, res) => {
+  await videoService.deleteVideoItem(req.params.itemId);
+  res.status(200).json({ success: true, data: null });
+});
 
-    return res.status(201).json(item);
-  } catch (err) {
-    console.error("Video upload failed:", err);
-    return res.status(500).json({ error: "Video upload failed" });
-  }
-}
-
-module.exports = { uploadVideo };
+module.exports = { uploadVideo, addVideoLink, deleteVideo };

@@ -9,9 +9,10 @@ const rateLimit = require("express-rate-limit");
 const logger = require("./config/logger");
 const errorHandler = require("./middleware/errorHandler");
 const authRoutes = require("./routes/auth.routes");
+const courseRoutes = require("./routes/course.routes");
 
 const app = express();
-console.log("FRONTEND_URL =", process.env.FRONTEND_URL);
+
 app.use(helmet());
 app.use(
   cors({
@@ -34,6 +35,7 @@ const authLimiter = rateLimit({
 });
 
 app.use("/api/auth", authLimiter, authRoutes);
+app.use("/api/admin/courses", courseRoutes);
 
 app.get("/", (req, res) => {
   res.json({ success: true, message: "LMS backend is running" });
