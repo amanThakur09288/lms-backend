@@ -25,7 +25,7 @@ async function updateSection(sectionId, { title }) {
 
 async function deleteSection(sectionId) {
   await ensureSectionExists(sectionId);
-  await prisma.section.delete({ where: { id: sectionId } }); // cascades to items/video/quiz
+  await prisma.section.delete({ where: { id: sectionId } });
 }
 
 async function reorderSections(courseId, orderedSectionIds) {

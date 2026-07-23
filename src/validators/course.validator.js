@@ -1,4 +1,3 @@
-// src/validators/course.validator.js
 const Joi = require("joi");
 
 const createCourseSchema = Joi.object({

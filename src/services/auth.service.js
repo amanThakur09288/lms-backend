@@ -1,4 +1,3 @@
-// src/services/auth.service.js
 const bcrypt = require("bcrypt");
 const { PrismaClient } = require("@prisma/client");
 const AppError = require("../utils/AppError");

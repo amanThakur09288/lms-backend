@@ -32,23 +32,26 @@ model User {
   email        String   @unique
   passwordHash String
   role         Role     @default(STUDENT)
+  bio          String?
+  avatarUrl    String?
   createdAt    DateTime @default(now())
 
   enrollments  Enrollment[]
+  itemProgress ItemProgress[]
 }
 
 model Course {
-  id           String    @id @default(uuid())
+  id           String   @id @default(uuid())
   title        String
   subtitle     String?
   description  String
   thumbnailUrl String?
-  status       String    @default("draft")
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  status       String   @default("draft")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  sections     Section[]
-  enrollments  Enrollment[]
+  sections    Section[]
+  enrollments Enrollment[]
 }
 
 model Section {
@@ -68,10 +71,24 @@ model Item {
   title     String
   order     Int
 
-  section    Section     @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  section    Section        @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   video      Video?
   quiz       Quiz?
   assignment Assignment?
+  note       Note?
+  progress   ItemProgress[]
+}
+
+model ItemProgress {
+  id          String   @id @default(uuid())
+  userId      String
+  itemId      String
+  completedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemId])
 }
 
 model Video {
@@ -122,6 +139,15 @@ model Assignment {
   instructions   String
   submissionType String
   graded         Boolean @default(true)
+
+  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+}
+
+model Note {
+  id            String  @id @default(uuid())
+  itemId        String  @unique
+  content       String
+  attachmentUrl String?
 
   item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
 }

@@ -9,7 +9,6 @@ async function getNextItemOrder(sectionId) {
   return lastItem ? lastItem.order + 1 : 0;
 }
 
-// Used after Multer has already uploaded the file to S3
 async function addUploadedVideo(sectionId, { title, isPreview, videoUrl }) {
   await ensureSectionExists(sectionId);
   const order = await getNextItemOrder(sectionId);
@@ -28,7 +27,6 @@ async function addUploadedVideo(sectionId, { title, isPreview, videoUrl }) {
   });
 }
 
-// Used for pasted YouTube/Drive/external links — no file handling needed
 async function addLinkedVideo(sectionId, { title, videoUrl, sourceType, isPreview }) {
   await ensureSectionExists(sectionId);
   const order = await getNextItemOrder(sectionId);
@@ -59,7 +57,7 @@ function detectSourceType(url, providedType) {
 async function deleteVideoItem(itemId) {
   const item = await prisma.item.findUnique({ where: { id: itemId } });
   if (!item) throw new AppError("Video item not found", 404);
-  await prisma.item.delete({ where: { id: itemId } }); // cascades to Video row
+  await prisma.item.delete({ where: { id: itemId } });
 }
 
 module.exports = { addUploadedVideo, addLinkedVideo, deleteVideoItem };

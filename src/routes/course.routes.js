@@ -13,12 +13,14 @@ const {
   videoLinkSchema,
 } = require("../validators/course.validator");
 
+const { addQuizSchema, addAssignmentSchema, addNoteSchema } = require("../validators/curriculum.validator");
+
 const courseController = require("../controllers/course.controller");
 const sectionController = require("../controllers/section.controller");
 const videoController = require("../controllers/videos.controller");
+const curriculumController = require("../controllers/curriculum.controller");
 const { videoUpload } = require("../middleware/upload.middleware");
 
-// All routes below require a logged-in admin
 router.use(authMiddleware, requireRole("ADMIN"));
 
 // --- Courses ---
@@ -28,15 +30,27 @@ router.get("/:courseId", courseController.getCourse);
 router.put("/:courseId", validate(updateCourseSchema), courseController.updateCourse);
 router.delete("/:courseId", courseController.deleteCourse);
 
-// --- Sections (nested under course) ---
+// --- Sections ---
 router.post("/:courseId/sections", validate(sectionSchema), sectionController.addSection);
 router.put("/:courseId/sections/reorder", validate(reorderSectionsSchema), sectionController.reorderSections);
 router.put("/sections/:sectionId", validate(sectionSchema), sectionController.updateSection);
 router.delete("/sections/:sectionId", sectionController.deleteSection);
 
-// --- Videos (nested under section) — two ways to add one ---
+// --- Videos ---
 router.post("/sections/:sectionId/videos/upload", videoUpload.single("video"), videoController.uploadVideo);
 router.post("/sections/:sectionId/videos/link", validate(videoLinkSchema), videoController.addVideoLink);
-router.delete("/items/:itemId/video", videoController.deleteVideo);
+// router.delete("/items/:itemId/video", videoController.deleteVideo);
+
+// --- Quizzes ---
+router.post("/sections/:sectionId/quizzes", validate(addQuizSchema), curriculumController.addQuiz);
+
+// --- Assignments ---
+router.post("/sections/:sectionId/assignments", validate(addAssignmentSchema), curriculumController.addAssignment);
+
+// --- Notes ---
+router.post("/sections/:sectionId/notes", validate(addNoteSchema), curriculumController.addNote);
+
+// --- Generic item delete (works for video, quiz, assignment, or note) ---
+router.delete("/items/:itemId", curriculumController.deleteItem);
 
 module.exports = router;

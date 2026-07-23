@@ -10,16 +10,29 @@ const logger = require("./config/logger");
 const errorHandler = require("./middleware/errorHandler");
 const authRoutes = require("./routes/auth.routes");
 const courseRoutes = require("./routes/course.routes");
+const publicCourseRoutes = require("./routes/publicCourse.routes");
+const userRoutes = require("./routes/user.routes");
+const enrollmentRoutes = require("./routes/enrollment.routes");
 
 const app = express();
 
 app.use(helmet());
+
+const allowedOrigins = [
+  process.env.ADMIN_FRONTEND_URL || "http://localhost:5173",
+  process.env.STUDENT_FRONTEND_URL || "http://localhost:5174",
+];
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+      callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(
@@ -36,6 +49,9 @@ const authLimiter = rateLimit({
 
 app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/admin/courses", courseRoutes);
+app.use("/api/courses", publicCourseRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/enrollments", enrollmentRoutes);
 
 app.get("/", (req, res) => {
   res.json({ success: true, message: "LMS backend is running" });
